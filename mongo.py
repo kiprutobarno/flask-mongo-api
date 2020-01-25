@@ -8,7 +8,7 @@ app.config['MONGO_URI'] = "mongodb://localhost:27017/restdb"
 mongo = PyMongo(app)
 
 
-@app.route("/star", methods=['POST'])
+@app.route("/stars", methods=['POST'])
 def add_star():
     star = mongo.db.stars
     name = request.json['name']
@@ -17,6 +17,18 @@ def add_star():
     new_star = star.find_one({"_id": star_id})
     output = {"name": new_star["name"], "distance": new_star["distance"]}
     return jsonify({"result": output}), 201
+
+
+@app.route("/stars", methods=['GET'])
+def get_stars():
+    stars = mongo.db.stars
+    output = []
+    for star in stars.find():
+        output.append({
+            "name": star["name"],
+            "distance": star["distance"]
+        })
+    return jsonify({"results": output}, 200)
 
 
 if __name__ == "__main__":
