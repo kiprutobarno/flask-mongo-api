@@ -28,7 +28,7 @@ def get_stars():
             "name": star["name"],
             "distance": star["distance"]
         })
-    return jsonify({"results": output}, 200)
+    return jsonify({"results": output}), 200
 
 
 if __name__ == "__main__":
