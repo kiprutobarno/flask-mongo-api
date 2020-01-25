@@ -1,5 +1,6 @@
-from flask import Flask, request, jsonify
-from flask_pymongo import PyMongo
+from flask import Flask, request, jsonify, json
+from flask_pymongo import PyMongo, MongoClient
+
 
 app = Flask(__name__)
 app.config['MONGO_DBNAME'] = "restdb"
@@ -10,25 +11,31 @@ mongo = PyMongo(app)
 
 @app.route("/stars", methods=['POST'])
 def add_star():
-    star = mongo.db.stars
-    name = request.json['name']
-    distance = request.json['distance']
-    star_id = star.insert({"name": name, "distance": distance})
-    new_star = star.find_one({"_id": star_id})
-    output = {"name": new_star["name"], "distance": new_star["distance"]}
-    return jsonify({"result": output}), 201
+    data = request.get_json()
+    id = mongo.db.stars.insert(data)
+    cursor = mongo.db.stars.find({"_id": id})
+
+    res = []
+    for star in cursor:
+        res.append({
+            "_id": str(star['_id']),
+            "name": star["name"],
+            "distance": star["distance"]
+        })
+    return jsonify({"star": res}), 201
 
 
 @app.route("/stars", methods=['GET'])
 def get_stars():
-    stars = mongo.db.stars
-    output = []
-    for star in stars.find():
-        output.append({
+    cursor = mongo.db.stars.find({})
+    stars = []
+    for star in cursor:
+        stars.append({
+            "_id": str(star['_id']),
             "name": star["name"],
             "distance": star["distance"]
         })
-    return jsonify({"results": output}), 200
+    return jsonify({"results": stars}), 200
 
 
 if __name__ == "__main__":
